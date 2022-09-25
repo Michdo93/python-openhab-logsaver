@@ -58,8 +58,8 @@ setup.py
 .eggs/tomli-2.0.1-py3.8.egg/tomli/_re.py
 .eggs/tomli-2.0.1-py3.8.egg/tomli/_types.py
 .eggs/tomli-2.0.1-py3.8.egg/tomli/py.typed
-openHABLogs/__init__.py
-openHABLogs/logsaver.py
+openhab/__init__.py
+openhab/logsaver.py
 python_openhab_logsaver.egg-info/PKG-INFO
 python_openhab_logsaver.egg-info/SOURCES.txt
 python_openhab_logsaver.egg-info/dependency_links.txt

@@ -6,7 +6,7 @@ import sys
 import mariadb
 import time
 
-class OpenHABLogReader(threading.Thread):
+class LogSaver(threading.Thread):
 
     def __init__(self, user:str, password:str, host:str, port:int, database:str, tablename:str, location:str, file:str):
         threading.Thread.__init__(self)
@@ -132,3 +132,50 @@ class OpenHABLogReader(threading.Thread):
         self.__createTable()
         self.__readAndSaveLogFile()
 
+class LogReader(threading.Thread):
+
+    def __init__(self, location:str, file:str):
+        threading.Thread.__init__(self)
+        self.threadID = threading.current_thread().ident
+        self.stamp = 0
+        self._cached_stamp = 0
+        self.location:str = location
+        self.file:str = file
+        self.last_log = ""
+
+    def __readLogFile(self):
+        while not os.path.exists(self.location + self.file):
+            time.sleep(1)
+
+        while True:
+            for filename in os.listdir(self.location):
+                if filename == self.file:
+                    while True:
+                        if not os.path.exists(self.location + self.file):
+                            time.sleep(1)
+                            continue
+                        else:
+                            stat = os.stat(self.location + self.file)
+                            if(hasattr(stat, 'st_mtime')):
+                                self.stamp = stat.st_mtime
+                                if stat.st_size == 0:
+                                    time.sleep(1)
+                                    break
+                                if self.stamp > self._cached_stamp:
+                                    self._cached_stamp = self.stamp
+                                    with open((self.location + self.file), "r") as f:
+                                        read = f.readlines()
+
+                                    if len(read) < 0:
+                                        time.sleep(1)
+                                        continue
+
+                                    self.last_log = read[-1]
+
+                                    print(self.last_log)
+                            else:
+                                continue
+                        continue
+
+    def run(self):
+        self.__readLogFile()

@@ -1,4 +1,4 @@
-# OpenHAB-LogSaver
+# Python openHAB LogSaver
 Save openhab logs into a MariaDB database. You can simply rewrite this code for other databases too. Please consider that it will only read and save the last line of a log file. If you restart openhab the log file should be empty. After each file change the last line will be reread with this program. With this each change should be transmitted into your databse table.
 
 The table looks like:
@@ -123,7 +123,7 @@ sudo systemctl enable ohlogsaver.service
 ### Standard configuration:
 
 ```
-from openHABLogs import OpenHABLogReader
+from openhab import LogSaver
 
 if __name__ == "__main__":
     threads = []
@@ -135,8 +135,8 @@ if __name__ == "__main__":
     database = "OpenHAB_LOGS"
     location = "/var/log/openhab/"
 
-    events = OpenHABLogReader(db_user, db_password, host, port, database, "events", location, "events.log")
-    openhab = OpenHABLogReader(db_user, db_password, host, port, database, "openhab", location, "openhab.log")
+    events = LogSaver(db_user, db_password, host, port, database, "events", location, "events.log")
+    openhab = LogSaver(db_user, db_password, host, port, database, "openhab", location, "openhab.log")
 
     threads.append(events)
     threads.append(openhab)
@@ -154,7 +154,7 @@ if __name__ == "__main__":
 ### openHAB and HABApp configuration
 
 ```
-from openHABLogs import OpenHABLogReader
+from openhab import LogSaver
 
 if __name__ == "__main__":
     threads = []
@@ -167,10 +167,10 @@ if __name__ == "__main__":
     location = "/var/log/openhab/"
     habapp_location = "/etc/openhab/habapp/logs/"
 
-    events = OpenHABLogReader(db_user, db_password, host, port, database, "events", location, "events.log")
-    openhab = OpenHABLogReader(db_user, db_password, host, port, database, "openhab", location, "openhab.log")
-    HABApp_events = OpenHABLogReader(db_user, db_password, host, port, database, "HABApp_events", habapp_location, "HABApp_events.log")
-    HABApp = OpenHABLogReader(db_user, db_password, host, port, database, "HABApp", habapp_location, "HABApp.log")
+    events = LogSaver(db_user, db_password, host, port, database, "events", location, "events.log")
+    openhab = LogSaver(db_user, db_password, host, port, database, "openhab", location, "openhab.log")
+    HABApp_events = LogSaver(db_user, db_password, host, port, database, "HABApp_events", habapp_location, "HABApp_events.log")
+    HABApp = LogSaver(db_user, db_password, host, port, database, "HABApp", habapp_location, "HABApp.log")
 
     threads.append(events)
     threads.append(openhab)
@@ -185,6 +185,31 @@ if __name__ == "__main__":
 
     events.disconnect()
     openhab.disconnect()
+```
+
+### Only read log files
+
+If you only want to read the log files you can import the `LogReader` instead of the `LogSaver`:
+
+```
+from openhab import LogReader
+
+if __name__ == "__main__":
+    threads = []
+
+    location = "/var/log/openhab/"
+
+    events = LogReader(location, "events.log")
+    openhab = LogReader(location, "openhab.log")
+
+    threads.append(events)
+    threads.append(openhab)
+
+    for th in threads:
+        th.start()
+
+    for t in threads:
+        t.join()
 ```
 
 ## Custom configuration
@@ -302,6 +327,4 @@ loggers:
     handlers:
       - BufferEventFile
     propagate: False
-
-```
 

@@ -1,1 +1,1 @@
-openHABLogs
+openhab
